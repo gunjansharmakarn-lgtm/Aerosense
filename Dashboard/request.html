@@ -1,0 +1,755 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AeroSense Request</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        :root {
+            --bg: #f7f8fa;
+            --panel: #ffffff;
+            --border: #dde4ea;
+            --text: #1f2937;
+            --muted: #64748b;
+            --accent: #0ea5e9;
+            --accent-soft: #e0f2fe;
+            --success: #16a34a;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0.9rem 1.5rem;
+
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .navbar a {
+            color: var(--text);
+            text-decoration: none;
+            margin-left: 1rem;
+            font-weight: 600;
+        }
+
+        .navbar a:hover {
+            color: var(--accent);
+        }
+
+        .main-wrapper {
+            max-width: 1100px;
+            margin: 110px auto 30px;
+            padding: 0 1rem;
+        }
+
+        .section {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            padding: 1.4rem;
+            margin-bottom: 1.25rem;
+        }
+
+        h2 {
+            margin: 0 0 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        #map {
+            height: 340px;
+            margin-top: 11px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            margin-top: 0.8rem;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        input,
+        textarea,
+        button,
+        select {
+            width: 100%;
+            padding: 0.85rem 0.95rem;
+
+            border-radius: 9px;
+            border: 1px solid var(--border);
+
+            background: #ffffff;
+            color: var(--text);
+
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.13);
+        }
+
+        .button-row {
+            margin-top: 0.8rem;
+
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+
+            background: var(--accent);
+            color: #ffffff;
+
+            font-weight: 700;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(14, 165, 233, 0.34);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+
+            background: #ffffff;
+            border: 1px solid var(--border);
+        }
+
+        th,
+        td {
+            padding: 0.72rem 0.7rem;
+
+            border: 1px solid var(--border);
+
+            text-align: center;
+
+            font-size: 0.92rem;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: var(--text);
+
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        tbody tr:hover {
+            background: #eff6ff;
+        }
+
+        @media (max-width: 768px) {
+
+            .navbar {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .navbar h1 {
+                flex: 1 0 100%;
+            }
+
+            .main-wrapper {
+                margin-top: 100px;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <!-- Navigation -->
+
+    <nav class="navbar">
+
+        <h1>
+            AeroSense Request
+        </h1>
+
+        <div>
+
+            <a href="index.html">
+                Dashboard
+            </a>
+
+            <a
+                href="#"
+                onclick="location.reload();"
+            >
+                Refresh
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <div class="main-wrapper">
+
+
+        <!-- Request Section -->
+
+        <div class="section">
+
+            <h2>
+                Request Air Quality Measurement
+            </h2>
+
+
+            <form id="requestForm">
+
+                <label for="address">
+                    Address
+                </label>
+
+                <input
+                    type="text"
+                    id="address"
+                    placeholder="Auto filled when map is clicked"
+                >
+
+
+                <label for="message">
+                    Message
+                </label>
+
+                <textarea
+                    id="message"
+                    placeholder="Write your request"
+                ></textarea>
+
+
+                <button
+                    type="button"
+                    onclick="getLocation()"
+                >
+                    Use My Location
+                </button>
+
+
+                <label>
+                    Select Location Manually
+                </label>
+
+
+                <div id="map"></div>
+
+
+                <input
+                    type="hidden"
+                    id="lat"
+                >
+
+                <input
+                    type="hidden"
+                    id="lng"
+                >
+
+
+                <button type="submit">
+                    Submit Request
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- Requested Locations -->
+
+        <div class="section">
+
+            <h2>
+                Requested Locations
+            </h2>
+
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>S.N</th>
+                            <th>Location</th>
+                            <th>Address</th>
+                            <th>AQI</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="requestTable"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Leaflet -->
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+
+    <!-- Firebase -->
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+
+    <script>
+
+        // ==============================
+        // Firebase Configuration
+        // ==============================
+
+        const firebaseConfig = {
+
+            apiKey: "",
+
+            authDomain: "",
+
+            databaseURL: "",
+
+            projectId: "",
+
+            storageBucket: "",
+
+            messagingSenderId: "",
+
+            appId: ""
+
+        };
+
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database();
+
+
+        // ==============================
+        // Map Setup
+        // ==============================
+
+        const map = L.map("map").setView(
+            [27.7172, 85.3240],
+            12
+        );
+
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+
+        let marker;
+
+
+        // ==============================
+        // Map Click
+        // ==============================
+
+        map.on("click", function (event) {
+
+            const lat = event.latlng.lat;
+            const lng = event.latlng.lng;
+
+            setMarker(lat, lng);
+
+            reverseGeocode(lat, lng);
+
+        });
+
+
+        // ==============================
+        // Set Marker
+        // ==============================
+
+        function setMarker(lat, lng) {
+
+            document.getElementById("lat").value = lat;
+            document.getElementById("lng").value = lng;
+
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+
+            marker = L.marker([
+                lat,
+                lng
+            ]).addTo(map);
+
+        }
+
+
+        // ==============================
+        // Get Current Location
+        // ==============================
+
+        function getLocation() {
+
+            if (!navigator.geolocation) {
+
+                alert(
+                    "Geolocation is not supported by this browser."
+                );
+
+                return;
+            }
+
+
+            navigator.geolocation.getCurrentPosition(
+
+                function (position) {
+
+                    const lat =
+                        position.coords.latitude;
+
+                    const lng =
+                        position.coords.longitude;
+
+
+                    map.setView(
+                        [lat, lng],
+                        15
+                    );
+
+
+                    setMarker(
+                        lat,
+                        lng
+                    );
+
+
+                    reverseGeocode(
+                        lat,
+                        lng
+                    );
+
+                },
+
+                function () {
+
+                    alert(
+                        "Unable to retrieve your location."
+                    );
+
+                }
+
+            );
+
+        }
+
+
+        // ==============================
+        // Reverse Geocoding
+        // ==============================
+
+        function reverseGeocode(lat, lng) {
+
+            fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+            )
+
+            .then(response => response.json())
+
+            .then(data => {
+
+                document.getElementById(
+                    "address"
+                ).value = data.display_name || "";
+
+            })
+
+            .catch(() => {
+
+                document.getElementById(
+                    "address"
+                ).value = "Address unavailable";
+
+            });
+
+        }
+
+
+        // ==============================
+        // Submit Request
+        // ==============================
+
+        document
+            .getElementById("requestForm")
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    const address =
+                        document.getElementById(
+                            "address"
+                        ).value;
+
+                    const message =
+                        document.getElementById(
+                            "message"
+                        ).value;
+
+                    const lat =
+                        document.getElementById(
+                            "lat"
+                        ).value;
+
+                    const lng =
+                        document.getElementById(
+                            "lng"
+                        ).value;
+
+
+                    if (lat === "" || lng === "") {
+
+                        alert(
+                            "Please select a location."
+                        );
+
+                        return;
+                    }
+
+
+                    db.ref("requests").push({
+
+                        address: address,
+
+                        message: message,
+
+                        lat: lat,
+
+                        lng: lng,
+
+                        aqi: "",
+
+                        status: "Incomplete",
+
+                        timestamp: Date.now()
+
+                    });
+
+
+                    alert(
+                        "Request submitted successfully."
+                    );
+
+
+                    document
+                        .getElementById("requestForm")
+                        .reset();
+
+                }
+            );
+
+
+        // ==============================
+        // Load Requests
+        // ==============================
+
+        db.ref("requests").on(
+            "value",
+            function (snapshot) {
+
+                const data = snapshot.val();
+
+                let html = "";
+
+                let serialNumber = 1;
+
+
+                map.eachLayer(
+                    function (layer) {
+
+                        if (
+                            layer instanceof L.Marker &&
+                            layer !== marker
+                        ) {
+
+                            map.removeLayer(layer);
+
+                        }
+
+                    }
+                );
+
+
+                if (data) {
+
+                    for (const id in data) {
+
+                        const request =
+                            data[id];
+
+
+                        html += `
+
+                            <tr>
+
+                                <td>
+                                    ${serialNumber}
+                                </td>
+
+                                <td>
+                                    ${request.lat},
+                                    ${request.lng}
+                                </td>
+
+                                <td>
+                                    ${request.address || "-"}
+                                </td>
+
+                                <td>
+                                    ${request.aqi || "-"}
+                                </td>
+
+                                <td>
+                                    ${request.status || "-"}
+                                </td>
+
+                            </tr>
+
+                        `;
+
+
+                        L.marker([
+                            Number(request.lat),
+                            Number(request.lng)
+                        ])
+
+                        .addTo(map)
+
+                        .bindPopup(
+                            `
+                                <strong>
+                                    Request Location
+                                </strong>
+                                <br>
+                                Status:
+                                ${request.status || "-"}
+                            `
+                        );
+
+
+                        serialNumber++;
+
+                    }
+
+                }
+
+
+                document.getElementById(
+                    "requestTable"
+                ).innerHTML = html;
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
+
